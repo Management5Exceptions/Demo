@@ -179,7 +179,7 @@ For better performance and check the availability of ads you can `canShowAd()` f
 6. To hide the banner.
 
 ```swift
-   bannerView.hideBanner()
+      bannerView.hideBanner()
 ```
 <p align="right"><a href="#readme-top">Back To Top</a></p>
 
