@@ -73,7 +73,7 @@ To use Appylar Ads in your application, you need to follow these steps. Please n
 
 1. To implement Appylar Ads in your iOS application, create an extension of App and init SDK. Additionally, implement the AppylarDelegate protocol within this extension. If you already have an application subclass in your project, you can use that instead.
 
-```swift
+```swiftUI
 import SwiftUI
 import Appylar
 @main
@@ -102,57 +102,31 @@ extension DemoApp: AppylarDelegate{
 ```
 
 2. Initialize SDK with configuration:
-```swift
+```swiftUI
 import SwiftUI
 import Appylar
 
-class ViewController: UIViewController{
-      	Override func viewDidLoad(){
-		super.viewDidLoad() 
-		//Attach callback listeners for SDK before initialization
-                AppylarManager.setEventListener(delegate: self,bannerDelegate: self,interstitialDelegate: self)  
-            	//Here ‘setEventListener’ is a method for AppylarManager
-		//Initialization
-           	AppylarManager.Init(                        
+@main
+struct DemoApp: App {
+    init() {
+        AppylarManager.setEventListener(delegate: self, bannerDelegate: self, interstitialDelegate: self)
+        AppylarManager.Init(                        
           		app_Key: "<YOUR_APP_KEY>"?? “”, //APP KEY provided by console for Development use
  			Adtypes: [AdType.BANNER, AdType.INTERSTITIAL],	//Types of Ads to integrate
-			orientations: [Orientation.PORTRAIT, Orientation.LANDSCAPE], 	//Supported orientations for Ads
 			testmode: true // ‘True’ for development and ‘False’ for production, 
 			)
           }
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
 }
-
 ```
-
-3.To further customize the Appylar Ads, you can use the setParameters() function after a valid session exists or after intialization.
-```swift
-Override func viewDidLoad(){
-   	super.viewDidLoad()  
-	//Attach callback listeners for SDK before initialization
-     	AppylarManager.setEventListener(delegate: self,bannerDelegate: self,interstitialDelegate: self)
-        //Here ‘setEventListener’ is a method for AppylarManager
-	//Initialization
-	AppylarManager.Init(                        
-          		app_Key: "<YOUR_APP_KEY>"?? “”, //APP KEY provided by console for Development use
- 			Adtypes: [AdType.BANNER, AdType.INTERSTITIAL],	//Types of Ads to integrate
-			orientations: [Orientation.PORTRAIT, Orientation.LANDSCAPE], 	//Supported orientations for Ads
-			testmode: true // ‘True’ for development and ‘False’ for production, 
-			)
-     	AppylarManager.setParameters(dict: [
-            "banner_height" : self.selectedHeightOfBanner != nil ? ["\(String(self.selectedHeightOfBanner!))"] : nil, // Height is given by user [“50”,”90]
-            "age_restriction" : self.selectedAge != nil ? ["\(String(self.selectedAge!))"] : nil //Age is given by user[“12”,”15”,”18”] 
-        ])  
-     }
-```
-<p align="right"><a href="#readme-top">Back To Top</a></p>
-
 #### Implementation of Banner 
 
-1. To integrate the BannerView component into your design, you need to prepare a view from the storyboard and set it to the BannerView type. Follow these steps:
-  * Drag a view from the library to your UIViewController.
-  * In the Attribute Inspector, set the class to BannerView and the module to Appylar.
-  * Create an outlet of type BannerView in your UIViewController to link it with the storyboard view.
-
+1. To integrate the BannerView component into your design, you need to prepare a view from the contentView and set it to the BannerView type. Follow these steps:
+ 
 ```swift
 @IBOutlet weak var bannerView: BannerView!
 ```	 
