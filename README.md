@@ -116,7 +116,7 @@ struct DemoApp: App {
 			testmode: true // ‘True’ for development and ‘False’ for production, 
 			)
           }
-    var body: some Scene {
+var body: some Scene {
         WindowGroup {
             ContentView()
         }
@@ -128,7 +128,7 @@ struct DemoApp: App {
 1. To integrate the BannerView component into your design, you need to prepare a view from the contentView and set it to the BannerView type. Follow these steps:
  
 ```swift
-    @State private var bannerView = BannerView()
+ @State private var bannerView = BannerView()
 ```	 
 
 2. Implement callback for banners.
@@ -150,36 +150,36 @@ extension DemoApp: BannerViewDelegate {
 For better performance and check the availability of ads you can `canShowAd()` function.
 
 ```swift
-   if BannerView().canShowAd(){
-           bannerView.showAd()
-   }
+if BannerView().canShowAd(){
+       bannerView.showAd()
+}
 ```
    The parameter placement is optional, and it is up to the developer to decide whether to pass it or not.
 
 4. For creating a BannerView as a representable, you need to define a struct that extends UIViewRepresentable.
 
 ```swift
-      struct BannerViewWrapper: UIViewRepresentable {
-         let bannerView: BannerView
+struct BannerViewWrapper: UIViewRepresentable {
+     let bannerView: BannerView
+
+     func makeUIView(context: Context) -> UIView {
+            bannerView
+     }
     
-         func makeUIView(context: Context) -> UIView {
-              bannerView
-         }
-    
-         func updateUIView(_ uiView: UIView, context: Context) {
-         }
-      }
+     func updateUIView(_ uiView: UIView, context: Context) {
+     }
+}
 ```
 5. To integrate the banner into your SwiftUI ContentView, you can use the following code:
 
 ```swift
-      BannerViewWrapper(bannerView: bannerView)
+BannerViewWrapper(bannerView: bannerView)
 ```
 
 6. To hide the banner.
 
 ```swift
-      bannerView.hideBanner()
+ bannerView.hideBanner()
 ```
 <p align="right"><a href="#readme-top">Back To Top</a></p>
 
@@ -187,7 +187,7 @@ For better performance and check the availability of ads you can `canShowAd()` f
 
 1. Make your a new swift file in which create a class of type `InterstitialViewController`.  
 ```swift
-   class interstitialViewController:InterstitialViewController
+class interstitialViewController:InterstitialViewController
 ```
 
 2. Implement callbacks for Interstitial.
@@ -211,6 +211,7 @@ extension DemoApp: InterstitialDelegate {
 
 3. Check Ad availablity and show the Ad.<br>
  For better performance and check the availability of ads you can `canShowAd()` function and call the showAd method in viewDidLoad() in a class which is a type of `InterstitialViewController`.
+
 ```swift
  if InterstitialViewController.canShowAd(){
          self.showAd()
@@ -254,7 +255,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 To override a function in your DemoApp file, you can refer to the AppDelegate class and override the corresponding function within it.
 
 ```swift
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+ @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 ```
 
 5. To create an InterstitialView as a representable, you need to define a struct that extends UIViewControllerRepresentable.
@@ -275,28 +276,28 @@ struct MyView: UIViewControllerRepresentable {
 6. To integrate the interstitial ad into your SwiftUI ContentView, you can use the following code:
 
 ```swift
-       MyView()
+interstitialViewRepresentable()
 ```
 
 7. To lock the orientation of the interstitial ad when using it as a view representable, apply the following code within the .onAppear and .onDisappear modifiers.
 
 ```swift
-          interstitialViewRepresentable()
-                    .onAppear{
-                        if currentOrientation.isLandscape{
-                            if currentOrientation == .landscapeLeft {
-                                AppDelegate.orientationLock = .landscapeRight
-                            }else if currentOrientation == .landscapeRight {
-                                AppDelegate.orientationLock = .landscapeLeft
-                            }
-                        }else{
-                            AppDelegate.orientationLock = .portrait
-                        }     
-                    }
-                    .onDisappear{
-                        NotificationCenter.default.post(name: UIDevice.orientationDidChangeNotification, object: nil)
-                        AppDelegate.orientationLock = .all
-                        currentOrientation = UIDevice.current.orientation
-                    }
+interstitialViewRepresentable()
+             .onAppear{
+                  if currentOrientation.isLandscape{
+                      if currentOrientation == .landscapeLeft {
+                           AppDelegate.orientationLock = .landscapeRight
+                      }else if currentOrientation == .landscapeRight {
+                           AppDelegate.orientationLock = .landscapeLeft
+                      }
+                   }else{
+                           AppDelegate.orientationLock = .portrait
+                   }     
+             }
+             .onDisappear{
+                   NotificationCenter.default.post(name: UIDevice.orientationDidChangeNotification, object: nil)
+                   AppDelegate.orientationLock = .all
+                   currentOrientation = UIDevice.current.orientation
+             }
 ```
 <p align="right"><a href="#readme-top">Back To Top</a></p>
