@@ -62,7 +62,7 @@ To use Appylar Ads in your application, you need to follow these steps. Please n
  Before proceeding with Appylar Ads integration, ensure that the Pods directory is available in your project. Once confirmed, you can import the necessary class into your UIViewController class
 
  ```swift
- import UIKit
+ import SwiftUI
  import Appylar
  ```
 
@@ -71,37 +71,39 @@ To use Appylar Ads in your application, you need to follow these steps. Please n
 #### Setup the configuration for your App and Listeners
 
 
-1. To implement Appylar Ads in your iOS application, create an extension of UIViewController() and override its viewDidLoad() method. Additionally, implement the AppylarDelegate protocol within this extension. If you already have an application subclass in your project, you can use that instead.
+1. To implement Appylar Ads in your iOS application, create an extension of App and init SDK. Additionally, implement the AppylarDelegate protocol within this extension. If you already have an application subclass in your project, you can use that instead.
 
 ```swift
-import UIKit
+import SwiftUI
 import Appylar
-
-class ViewController: UIViewController{
-      	Override func viewDidLoad(){
-            	super.viewDidLoad()  
-		//Attach callback listeners for SDK before initialization
-                AppylarManager.setEventListener(delegate: self,bannerDelegate: self,interstitialDelegate: self)  
-            	//Here ‘setEventListener’ is a method for AppylarManager
-            	//Initialization
-            	……
-         }
-}
-//Attach callbacks for initialization
-extension ViewController: AppylarDelegate {
-    	func onInitialized() {
-              	//Callback for successful initialization
-      	}
-
-     	func onError(error: String) {
-                //Callback for error thrown by SDK
+@main
+struct DemoApp: App {
+    init() {
+        AppylarManager.setEventListener(delegate: self, bannerDelegate: self, interstitialDelegate: self)
+        AppylarManager.Init(appKey: "OwDmESooYtY2kNPotIuhiQ", adTypes: [.interstitial, .banner], testMode: true)
+    }
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
         }
+    }
+}
+
+//Attach callbacks for initialization
+extension DemoApp: AppylarDelegate{
+    func onInitialized() {
+        print("onInitialized")
+    }
+    
+    func onError(error: String) {
+        print("onError:\(error)")
+    }
 }
 ```
 
 2. Initialize SDK with configuration:
 ```swift
-import UIKit
+import SwiftUI
 import Appylar
 
 class ViewController: UIViewController{
@@ -233,7 +235,7 @@ if  InterstitialViewController.canShowAd(){
 1. For initialization
 	
 ```swift
-import UIKit
+import SwiftUI
 import Appylar
 		
 class ViewController: InterstitialViewController{
