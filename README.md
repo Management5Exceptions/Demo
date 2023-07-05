@@ -73,7 +73,7 @@ To use Appylar Ads in your application, you need to follow these steps. Please n
 
 1. To implement Appylar Ads in your iOS application, create an extension of App and init SDK. Additionally, implement the AppylarDelegate protocol within this extension. If you already have an application subclass in your project, you can use that instead.
 
-```swiftUI
+```swift
 import SwiftUI
 import Appylar
 @main
@@ -102,7 +102,7 @@ extension DemoApp: AppylarDelegate{
 ```
 
 2. Initialize SDK with configuration:
-```swiftUI
+```swift
 import SwiftUI
 import Appylar
 
@@ -128,34 +128,55 @@ struct DemoApp: App {
 1. To integrate the BannerView component into your design, you need to prepare a view from the contentView and set it to the BannerView type. Follow these steps:
  
 ```swift
-@IBOutlet weak var bannerView: BannerView!
+    @State private var bannerView = BannerView()
 ```	 
 
 2. Implement callback for banners.
 
 ```swift
 //Attach callbacks for banner.
-func onNoBanner(){
-    	//Callback for when there is no Ad to show.  
-   }
-func onBannerShown() {
-       //Callback for Ad shown.  
-   }
+extension AppylarDemoApp: BannerViewDelegate {
+    func onNoBanner() {
+        print("onNoBanner()")
+    }
+    
+    func onBannerShown() {
+        print("onBannerShown()")
+    }
+}
 ```
 
 3. Check Ad availability and show the Ad. <br>
 For better performance and check the availability of ads you can `canShowAd()` function.
+
 ```swift
-   if BannerView.canShowAd(){             
-  	           // showAd function with the value of placement
-  	         self.bannerView.showAd(placement: txtfieldEnterPlacement.text ?? "" )
-		 // showAd function without placement parameter
-		 self.bannerView.showAd()            
-  }
+   if BannerView().canShowAd(){
+           bannerView.showAd()
+   }
 ```
    The parameter placement is optional, and it is up to the developer to decide whether to pass it or not.
 
-4. To hide the banner.
+4. For creating a BannerView as a representable, you need to define a struct that extends UIViewRepresentable.
+
+```swift
+      struct BannerViewWrapper: UIViewRepresentable {
+         let bannerView: BannerView
+    
+         func makeUIView(context: Context) -> UIView {
+              bannerView
+         }
+    
+         func updateUIView(_ uiView: UIView, context: Context) {
+         }
+      }
+```
+5. To integrate the banner into your SwiftUI ContentView, you can use the following code:
+
+```swift
+      BannerViewWrapper(bannerView: bannerView)
+```
+
+6. To hide the banner.
 
 ```swift
    bannerView.hideBanner()
