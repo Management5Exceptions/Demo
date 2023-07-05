@@ -135,7 +135,7 @@ struct DemoApp: App {
 
 ```swift
 //Attach callbacks for banner.
-extension AppylarDemoApp: BannerViewDelegate {
+extension DemoApp: BannerViewDelegate {
     func onNoBanner() {
         print("onNoBanner()")
     }
