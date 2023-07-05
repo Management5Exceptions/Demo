@@ -1,607 +1,331 @@
-# DemoPod
-# Applylar Android SDK Integration
+# Integration Of Appylar For iOS
+  Appylar is an SDK framework created by Appylar that provides ad-serving capabilities for iOS mobile applications.
+ <a name="readme-top"></a>
+ <!-- TABLE OF CONTENTS -->
+  <p>Implementation Guide for Developers: </p>
+  <ol>
+    <li>
+      <a href="#about-appylar">About Appylar</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#ad-types">Ad Types</a>
+    </li>
+    <li><a href="#general-requirements">General Requirements</a></li>
+    <li>
+    <a href="#implementation">Implementation</a>
+     <ul>
+	<li><a href="#pod-installation">Pod Installation</a></li>
+        <li><a href="#add-appylar">Add Appylar</a></li>
+	<li><a href="#setup-the-configuration-for-your-app-and-listeners">Setup the configuration for your App and Listeners</a></li>
+	<li><a href="#implementation-of-banner">Implementation of Banner</a></li>
+	<li><a href="#add-interstitial-ads">Add Interstitial Ads</a></li>   
+      </ul>
+    </li>
+    <li><a href="#sample-codes">Sample Codes</a></li>
+  </ol>
 
-Appylar library for Android is a lightweight and easy-to-use Ad integration SDK provided by Appylar. SDK enables developers to integrate Appylar Ads in any type of application.
+## About Appylar
+Appylar is a lightweight and user-friendly SDK for integrating ads into iOS applications, developed by Appylar. With this SDK, developers can easily integrate Appylar Ads into any type of iOS app
 
-Appylar provides several types of Ads and enables you to set Ads wherever you want in the application.
+#### Built With
+ * [Swift](https://docs.swift.org/assets/images/swift.svg)
 
-The Ads provided by Appylar are like:
-
- - Banners
- - Insterstitials
+## Ad Types
+Appylar offers multiple ad types and provides developers with the flexibility to place ads anywhere within their application. The ad types available with Appylar are banners and interstitials.
  
 ## General Requirements
- - Targeted versions must be Android 5.0 (API level 21) [Lollipop] and later.
+ * Appylar requires a minimum targeted version of iOS 12.0 or later.
+
+## Implementation
+To use Appylar Ads in your application, you need to follow these steps. Please note that additional implementation steps may be required based on your specific use case:
+ #### Pod Installation
+ Adding Pods to an Xcode project
  
-# Usage
-The installation guide will lead you through the following steps:
- - <a href="https://github.com/5exceptions-rakeshdiwan/mine-personal/new/main?readme=1#appylar-android-sdk">Add Appylar to Gradle</a>
- - <a href="https://github.com/5exceptions-rakeshdiwan/mine-personal/new/main?readme=1#appylar-android-sdk">Setup the SDK configuration</a>
- - <a href="https://github.com/5exceptions-rakeshdiwan/mine-personal/new/main?readme=1#appylar-android-sdk">Add BannerView to the application</a>
- - <a href="https://github.com/5exceptions-rakeshdiwan/mine-personal/new/main?readme=1#appylar-android-sdk">Add Interstitial to the application</a>
+ * Open a terminal window, and $ cd into your project directory.
+ * Create a Podfile. This can be done by running $ pod init.
+ * Add a CocoaPod by specifying pod '$Appylar' on a single line inside your target block.
+     ```     
+     target ‘App Name’ do
+     pod 'Appylar'
+     end
+     ```
+  * Save your Podfile.
+  * Run $ pod install
+  * Open the MyApp.xcworkspace that was created. This should be the file you use everyday to create your app.
 
-# Step 1: Add Appylar to your Gradle
-Make sure `MavenCentral` artifact repository is available in your project's root build.gradle (or settings.gradle if you are using settings repositories):
-#### `build.gradle`
+ 
+ #### Add Appylar 
 
-allprojects {
-	repositories {
-		...
-		mavenCentral()
-	}
+ Before proceeding with Appylar Ads integration, ensure that the Pods directory is available in your project. Once confirmed, you can import the necessary class into your UIViewController class
+
+ ```swift
+ import UIKit
+ import Appylar
+ ```
+
+<p align="right"><a href="#readme-top">Back To Top</a></p>
+
+#### Setup the configuration for your App and Listeners
+
+
+1. To implement Appylar Ads in your iOS application, create an extension of UIViewController() and override its viewDidLoad() method. Additionally, implement the AppylarDelegate protocol within this extension. If you already have an application subclass in your project, you can use that instead.
+
+```swift
+import UIKit
+import Appylar
+
+class ViewController: UIViewController{
+      	Override func viewDidLoad(){
+            	super.viewDidLoad()  
+		//Attach callback listeners for SDK before initialization
+                AppylarManager.setEventListener(delegate: self,bannerDelegate: self,interstitialDelegate: self)  
+            	//Here ‘setEventListener’ is a method for AppylarManager
+            	//Initialization
+            	……
+         }
 }
+//Attach callbacks for initialization
+extension ViewController: AppylarDelegate {
+    	func onInitialized() {
+              	//Callback for successful initialization
+      	}
 
-#### `settings.gradle`
-
-pluginManagement {
-    repositories {
-        ...
-        mavenCentral()
-    }
+     	func onError(error: String) {
+                //Callback for error thrown by SDK
+        }
 }
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        ...
-        mavenCentral()
-    }
-}
-
-Set dependency in your :app module's build.gradle: `[build.gradle (: app)]`
-- *Groovy*
-
-dependencies {
-	implementation 'com.appylar:android.sdk:#latest-version'
-}
-
-      
-- *Kotlin*
-
-dependencies {
-	implementation("com.appylar:android.sdk:#latest-version")
-}      
-
-# Step 2: Setup the configuration for your App and Listeners
-1. Create arbitrary subclass of Application(), override it's onCreate() method and implement `Events` interface. You can, of course, use your Application subclass, if you already have one in your project.
-#### Kotlin : `[AppylarApplication.kt]`
-
-import com.appylar.android.sdk.Appylar
-import com.appylar.android.sdk.interfaces.Events
-
-class AppylarApplication : Application(), Events {
-
-    override fun onCreate() {
-        super.onCreate()
-	Appylar.setEventListener(this) //attach callback listeners for SDK before initialization
-	//Initialization
-	...
-    }
-    
-    override fun onInitialized() {
-         //Callback for successful initialization
-    }
-
-    override fun onError(error: String) {
-        //Callback for error thrown by SDK
-    }
-}
-
-#### Java : `[AppylarApplication.java]`
-
-import com.appylar.android.sdk.Appylar;
-import com.appylar.android.sdk.interfaces.Events;
-
-public class AppylarApplication extends Application implements Events {
-    @Override
-    public void onCreate() {
-        super.onCreate();
-	Appylar.setEventListener(this); //Attach callback listeners for SDK before initialization
-	//Initialization
-	...
-    }
-    @Override
-    public void onInitialized() {
-	//Callback for successful initialization
-    }
-
-    @Override
-    public void onError(@NonNull String error) {
-	//Callback for error thrown by SDK
-    }
-}
+```
 
 2. Initialize SDK with configuration:
-#### Kotlin - `[AppylarApplication.kt]`
+```swift
+import UIKit
+import Appylar
 
-override fun onCreate() {
-	super.onCreate()
-	Appylar.setEventListener(this) //Attach callback listeners for SDK before initialization
+class ViewController: UIViewController{
+      	Override func viewDidLoad(){
+		super.viewDidLoad() 
+		//Attach callback listeners for SDK before initialization
+                AppylarManager.setEventListener(delegate: self,bannerDelegate: self,interstitialDelegate: self)  
+            	//Here ‘setEventListener’ is a method for AppylarManager
+		//Initialization
+           	AppylarManager.Init(                        
+          		app_Key: "<YOUR_APP_KEY>"?? “”, //APP KEY provided by console for Development use
+ 			Adtypes: [AdType.BANNER, AdType.INTERSTITIAL],	//Types of Ads to integrate
+			orientations: [Orientation.PORTRAIT, Orientation.LANDSCAPE], 	//Supported orientations for Ads
+			testmode: true // ‘True’ for development and ‘False’ for production, 
+			)
+          }
+}
+
+```
+
+3.To further customize the Appylar Ads, you can use the setParameters() function after a valid session exists or after intialization.
+```swift
+Override func viewDidLoad(){
+   	super.viewDidLoad()  
+	//Attach callback listeners for SDK before initialization
+     	AppylarManager.setEventListener(delegate: self,bannerDelegate: self,interstitialDelegate: self)
+        //Here ‘setEventListener’ is a method for AppylarManager
 	//Initialization
-	 Appylar.init(
-                this, //Application context 
-                "<YOUR_APP_KEY>", 	//APP KEY provide by console for Development use ["jrctNFE1b-7IqHPShB-gKw"] 
-                arrayOf(AdType.BANNER, AdType.INTERSTITIAL), 	//What type of Ads you want to integrate 
-                arrayOf(Orientation.PORTRAIT, Orientation.LANDSCAPE), 	//Supported orientations for Ads
-                true 	//Test Mode, [TRUE] for development & [FALSE] for production
-            )
+	AppylarManager.Init(                        
+          		app_Key: "<YOUR_APP_KEY>"?? “”, //APP KEY provided by console for Development use
+ 			Adtypes: [AdType.BANNER, AdType.INTERSTITIAL],	//Types of Ads to integrate
+			orientations: [Orientation.PORTRAIT, Orientation.LANDSCAPE], 	//Supported orientations for Ads
+			testmode: true // ‘True’ for development and ‘False’ for production, 
+			)
+     	AppylarManager.setParameters(dict: [
+            "banner_height" : self.selectedHeightOfBanner != nil ? ["\(String(self.selectedHeightOfBanner!))"] : nil, // Height is given by user [“50”,”90]
+            "age_restriction" : self.selectedAge != nil ? ["\(String(self.selectedAge!))"] : nil //Age is given by user[“12”,”15”,”18”] 
+        ])  
+     }
+```
+<p align="right"><a href="#readme-top">Back To Top</a></p>
+
+#### Implementation of Banner 
+
+1. To integrate the BannerView component into your design, you need to prepare a view from the storyboard and set it to the BannerView type. Follow these steps:
+  * Drag a view from the library to your UIViewController.
+  * In the Attribute Inspector, set the class to BannerView and the module to Appylar.
+  * Create an outlet of type BannerView in your UIViewController to link it with the storyboard view.
+
+```swift
+@IBOutlet weak var bannerView: BannerView!
+```	 
+
+2. Implement callback for banners.
+
+```swift
+//Attach callbacks for banner.
+func onNoBanner(){
+    	//Callback for when there is no Ad to show.  
+   }
+func onBannerShown() {
+       //Callback for Ad shown.  
+   }
+```
+
+3. Check Ad availability and show the Ad. <br>
+For better performance and check the availability of ads you can `canShowAd()` function.
+```swift
+   if BannerView.canShowAd(){             
+  	           // showAd function with the value of placement
+  	         self.bannerView.showAd(placement: txtfieldEnterPlacement.text ?? "" )
+		 // showAd function without placement parameter
+		 self.bannerView.showAd()            
+  }
+```
+   The parameter placement is optional, and it is up to the developer to decide whether to pass it or not.
+
+4. To hide the banner.
+
+```swift
+   bannerView.hideBanner()
+```
+<p align="right"><a href="#readme-top">Back To Top</a></p>
+
+#### Add Interstitial Ads
+
+1. Make your `ViewController` of type `InterstitialViewController`.  
+```swift
+   class ViewController: InterstitialViewController
+```
+
+2. Implement callbacks for Interstitial.
+```swift
+//Attach callbacks for interstitial.
+func onNoInterstitial(){
+    	//Callback for when there is no Ad to show.  
+   }
+func onInterstitialShown() {
+       //Callback for Ad shown.  
+   }
+func onInterstitialClosed() {
+    	//Callback for close event of interstitial
+   }
+```	
+
+3. Check Ad availablity and show the Ad.<br>
+ For better performance and check the availability of ads you can `canShowAd()` function.
+```swift
+if  InterstitialViewController.canShowAd(){
+                 // showAd function with the value of placement
+  	         self.bannerView.showAd(placement: txtfieldEnterPlacement.text ?? "" )
+		 // showAd function without placement parameter
+		 self.bannerView.showAd()
 }
+```
+   The parameter placement is optional, and it is up to the developer to decide whether to pass it or not.
 
-#### Java - `[AppylarApplication.java]`
+4. For lock the orientation of interstitial in your `AppDelegate` and override a function in it.
 
-@Override
-public void onCreate() {
-	super.onCreate();
-	Appylar.setEventListener(this);//Attach callback listeners for SDK before initialization
-	//Initialization
-	Appylar.init(
-		this, //application context 
-		"<YOUR_APP_KEY>", 	//APP KEY provide by console for Development use ["jrctNFE1b-7IqHPShB-gKw"]
-		new AdType[] {AdType.BANNER, AdType.INTERSTITIAL}, 	//What type Ads you want to integrate 
-		new Orientation[] {Orientation.PORTRAIT, Orientation.LANDSCAPE}, 	//Supported orientations for Ads
-                true 	//Test Mode, [TRUE] for development & [FALSE] for production
-	); 
-}
+```swift
+      func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+           return AppylarManager.supportedOrientation
+      }
+```
+<p align="right"><a href="#readme-top">Back To Top</a></p>
 
-3. There is another method available for parameters customization:
-#### Kotlin - `[AppylarApplication.kt]`
+## Sample Codes
 
-override fun onCreate() {
-	super.onCreate()
-	//Hashmap is required for setParameter(), as mentioned below
-	val parameters: MutableMap<String, Array<String>> = HashMap() 
-        parameters.put("banner_height", arrayOf("90")) //for customized banner height
-        parameters.put("age_restriction", arrayOf("18")) //to apply age restrictions
-        Appylar.setParameters(parameters)
-}
-
-#### Java - `[AppylarApplication.java]`
-
-@Override
-public void onCreate() {
-	super.onCreate();
-	//Hashmap is required for setParameter(), as mentioned below
-	HashMap<String, String[]> parameters = new HashMap();
-        parameters.put("banner_height", new String[]{"90"}); //for customized banner height
-        parameters.put("age_restriction", new String[]{"18"}); //to apply age restrictions
-        Appylar.setParameters(parameters);
-}
-
-4. Add this new subclass to AndroidManifest.xml" inside <application> tag: - `[AndroidManifest.xml]`
-
-<application
-    android:name=".AppylarApplication"
-    ...
-
-# Step 3: Add BannerView to the application
-1. To integrate the BannerView component in your design, prefer below snippet:
-
-<com.appylar.android.sdk.bannerview.BannerView
-	android:id="@+id/bannerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-	  
-2. Bind component to your activity and implement callback listeners.
-###### Kotlin
-
-import com.appylar.android.sdk.bannerview.BannerView
-
-class KotlinActivity : AppCompatActivity() : BannerViewListener {
-    private lateinit var bannerView: BannerView
-    
-    	override fun onCreate(savedInstanceState: Bundle?) {
-        	super.onCreate(savedInstanceState)
-        	setContentView(R.layout.activity_kotlin)
-        	bannerView = findViewById(R.id.bannerView)
-		bannerView.setEventListener(this) //Attach Event Listeners
-    	}
-	
-	override fun onNoBanner() {
-		//Callback if there are no banners available to show
-	}
-
-	override fun onBannerShown() {
-		//Callback for Banner shown success
-	}
-}
-
-###### Java
-
-import com.appylar.android.sdk.bannerview.BannerView;
-
-public class JavaActivity extends AppCompatActivity implements BannerViewListener {
-	private BannerView bannerView; 
-    
-    	@Override
-    	protected void onCreate(Bundle savedInstanceState) {
-        	super.onCreate(savedInstanceState);
-        	setContentView(R.layout.activity_java);
-  		bannerView = findViewById(R.id.bannerView);
-		bannerView.setEventListener(this); //Attach Event Listeners
-    	}
-	
-	@Override
-        public void onNoBanner() {
-		//Callback if there are no banners available to show
-	}
-	
-	@Override
-        public void onBannerShown() {
-		//Callback for Banner shown success
-	}
-}
-	
-
-3. Check Ad availablity and show the Ad.
-###### Kotlin
-
-bannerView.setEventListener(this) //Attach Event Listeners
-if(bannerView.canShowAd()) {
-	//BannerView to show Ad on the UI with optional customized placement
-	//Leave blank if not required
-	bannerView.showAd("<PLACEMENT_STRING>") //Placement string is an optional parameter
-}
-
-
-###### Java
-
-bannerView.setEventListener(this); //Attach Event Listeners
-if(bannerView.canShowAd()) { //Check Ad availability
-	//BannerView to show Ad on the UI with optional customized placement
-	//Leave blank if not required
-	bannerView.showAd("<PLACEMENT_STRING>"); //Placement string is an optional parameter
-}
-
-	
-4. For hiding the banner at the run time.
-###### Kotlin
-
-	bannerView.hideBanner()	
-
-###### Java
-
-	bannerView.hideBanner();
-
-
-# Step 4: Add Interstitial to the application
-1. Implement callback listeners for Interstitial.
-###### Kotlin
-
-import com.appylar.android.sdk.interstitial.Interstitial
-
-class KotlinActivity : AppCompatActivity() : InterstitialListener {
-    	override fun onCreate(savedInstanceState: Bundle?) {
-        	super.onCreate(savedInstanceState)
-        	setContentView(R.layout.activity_kotlin)
-	
-		Interstitial.setEventListener(this) //Attach Event Listeners
-    	}
-	
-	override fun onNoInterstitial() {
-        	//Callback if there are no interstitials available to show
-	}
-
-	override fun onInterstitialShown() {
-		//Callback for interstitial shown success
-	}
-	
-	override fun onInterstitialClosed() {
-		//Callback for close event of interstitial
-	}
-}
-
-###### Java
-
-import com.appylar.android.sdk.interstitial.Interstitial;
-
-public class JavaActivity extends AppCompatActivity implements InterstitialListener {
-    
-    	@Override
-    	protected void onCreate(Bundle savedInstanceState) {
-        	super.onCreate(savedInstanceState);
-        	setContentView(R.layout.activity_java);
-	
-  		Interstitial.setEventListener(this); //Attach Event Listeners
-    	}
-	
-	@Override
-        public void onNoInterstitial() {
-        	//Callback if there are no interstitials available to show
-	}
-	
-	@Override
-        public void onInterstitialShown() {
-		//Callback for interstitial shown success
-	}
-	
-	@Override
-        public void onInterstitialClosed() {
-		//Callback for close event of interstitial
-	}
-}
-	
-3. Check Ad availablity and show the Ad.
-###### Kotlin
-
-Interstitial.setEventListener(this) //Attach Event Listeners
-if(Interstitial.canShowAd()) {
-	//Interstitial to show Ad on the UI with context of activity and optional customized placement
-	//Leave blank if not required
-	Interstitial.showAd(this, "<PLACEMENT_STRING>") //Placement string is an optional parameter	
-}
-
-###### Java
-
-Interstitial.setEventListener(this); //Attach Event Listeners
-if(Interstitial.canShowAd()) { //Check Ad availability
-	//Interstitial to show Ad on the UI with context of activity and optional customized placement
-	//Leave blank if not required
-	Interstitial.showAd(this, "<PLACEMENT_STRING>"); //Placement string is an optional parameter	
-}
-
-
-# Sample Codes
 1. For initialization
 	
-#### Kotlin - [AppylarApplication.kt]
-
-import android.app.Application
-import android.util.Log
-import com.appylar.android.sdk.Appylar
-import com.appylar.android.sdk.enums.AdType
-import com.appylar.android.sdk.enums.Orientation
-import com.appylar.android.sdk.interfaces.Events
-
-class AppylarApplication : Application(), Events {
-    private val TAG = "AppylarApplication"
-
-    override fun onCreate() {
-        super.onCreate()
-        Appylar.setEventListener(this) //Attach callback listeners for SDK before initialization
-        Appylar.init(
-            this, //Application context
-            "jrctNFE1b-7IqHPShB-gKw",    //APP KEY provide by console for Development use ["jrctNFE1b-7IqHPShB-gKw"]
-            arrayOf(AdType.BANNER, AdType.INTERSTITIAL),    //What type of Ads you want to integrate
-            arrayOf(
-                Orientation.PORTRAIT,
-                Orientation.LANDSCAPE
-            ),    //Supported orientations for Ads
-            true    //Test Mode, [TRUE] for development & [FALSE] for production
-        )
-    }
-
-    override fun onError(error: String) {
-        Log.d(TAG, "onError: $error")
-    }
-
-    override fun onInitialized() {
-        Log.d(TAG, "onInitialized: called")
-    }
+```swift
+import UIKit
+import Appylar
+		
+class ViewController: InterstitialViewController{
+    	Override func viewDidLoad() {
+		super.viewDidLoad()  
+		//Attach callback listeners for SDK before initialization
+                AppylarManager.setEventListener(delegate: self,bannerDelegate: self,interstitialDelegate: self) 
+            	//Here ‘setEventListener’ is a method for AppylarManager
+		//Initialization
+           	AppylarManager.Init(                        
+          		app_Key: "<YOUR_APP_KEY>"?? “”, //APP KEY provided by console for Development use    ["OwDmESooYtY2kNPotIuhiQ"]
+ 			Adtypes: [AdType.BANNER, AdType.INTERSTITIAL]	//Types of Ads to integrate
+			orientations: [Orientation.PORTRAIT, Orientation.LANDSCAPE], 	//Supported orientations for Ads
+			testmode: true // ‘True’ for development and ‘False’ for production, 
+			)
+     	}
 }
 
-	
-#### Java - [AppylarApplication.java]
+```
 
-import android.app.Application;
-import android.util.Log;
+2. For orientation lock of interstitial:
 
-import androidx.annotation.NonNull;
+```swift
+  func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+           return AppylarManager.supportedOrientation
+  }
+```
+3.  Implements for both the types:
 
-import com.appylar.android.sdk.Appylar;
-import com.appylar.android.sdk.enums.AdType;
-import com.appylar.android.sdk.enums.Orientation;
-import com.appylar.android.sdk.interfaces.Events;
+```swift
+import UIKit
+import Appylar
 
-public class AppylarApplication extends Application implements Events {
-    private static final String TAG = "AppylarApplication";
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Appylar.setEventListener(this); //Attach callback listeners for SDK before initialization
-        Appylar.init(
-                this, //application context
-                "jrctNFE1b-7IqHPShB-gKw",    //APP KEY provide by console for Development use ["jrctNFE1b-7IqHPShB-gKw"]
-                new AdType[]{AdType.BANNER, AdType.INTERSTITIAL},    //What type Ads you want to integrate
-                new Orientation[]{Orientation.PORTRAIT, Orientation.LANDSCAPE},    //Supported orientations for Ads
-                true    //Test Mode, [TRUE] for development & [FALSE] for production
-        );
-    }
-
-    @Override
-    public void onError(@NonNull String s) {
-        Log.d(TAG, "onError: " + s);
-    }
-
-    @Override
-    public void onInitialized() {
-        Log.d(TAG, "onInitialized: called");
-    }
+class ViewController: InterstitialViewController { 
+    	@IBAction func btnShowBannerDidTapped(_ sender: UIButton) {
+            if BannerView.canShowAd(){    
+	         // showAd function with the value of placement
+  	         self.bannerView.showAd(placement: txtfieldEnterPlacement.text ?? "" )
+		 // showAd function without placement parameter
+		 self.bannerView.showAd()
+            }
+    	 }
+    
+    	@IBAction func btnHideBannerDidTapped(_ sender: UIButton) {
+        	self.bannerView.hideBanner()
+        	self.view.layoutIfNeeded()
+    	}
+    
+    	@IBAction func btnShowIntersitialDidTapped(_ sender: UIButton) {
+        	if  InterstitialViewController.canShowAd(){
+                 // showAd function with the value of placement
+  	         self.bannerView.showAd(placement: txtfieldEnterPlacement.text ?? "" )
+		 // showAd function without placement parameter
+		 self.bannerView.showAd()
+       		} 
+   	}
 }
-
-
-			
-2. Design file - [activity_main.xml]
-
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <com.appylar.android.sdk.bannerview.BannerView
-        android:id="@+id/bannerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_margin="16dp"
-        android:orientation="vertical">
-
-        <Button
-            android:id="@+id/btnShowBanner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Show Banner" />
-
-        <Button
-            android:id="@+id/btnHideBanner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Hide Banner" />
-
-        <Button
-            android:id="@+id/btnShowInterstitial"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Show Interstitial" />
-    </LinearLayout>
-
-</RelativeLayout>
-
-			
-3. Implementation for both type of ads
-	
-###### Kotlin
-
-import android.os.Bundle
-import android.util.Log
-import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
-import com.appylar.android.sdk.bannerview.BannerView
-import com.appylar.android.sdk.bannerview.BannerViewListener
-import com.appylar.android.sdk.interstitial.Interstitial
-import com.appylar.android.sdk.interstitial.InterstitialListener
-
-class KotlinActivity : AppCompatActivity(), BannerViewListener, InterstitialListener {
-    private val TAG = "KotlinActivity"
-    private lateinit var bannerView: BannerView
-    private lateinit var btnShowBanner: Button
-    private lateinit var btnHideBanner: Button
-    private lateinit var btnShowInterstitial: Button
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        bannerView = findViewById(R.id.bannerView)
-        btnShowBanner = findViewById(R.id.btnShowBanner)
-        btnHideBanner = findViewById(R.id.btnHideBanner)
-        btnShowInterstitial = findViewById(R.id.btnShowInterstitial)
-
-        bannerView.setEventListener(this) //Attach Banner Event Listeners
-        btnShowBanner.setOnClickListener {
-            if (bannerView.canShowAd()) {
-                bannerView.showAd("")
-            }
-        }
-        btnHideBanner.setOnClickListener {
-            bannerView.showAd("")
-        }
-
-        Interstitial.setEventListener(this) //Attach Interstitial Event Listeners
-        btnShowInterstitial.setOnClickListener {
-            if (Interstitial.canShowAd()) {
-                Interstitial.showAd(this, "")
-            }
-        }
+//Attach callbacks for Initialization.
+extension ViewController : AppylarDelegate {
+    func onInitialized() {
+        Print("onInitialized() ")
     }
     
-    override fun onBannerShown() {
-        Log.d(TAG, "onBannerShown: called")
+    func onError(error : String) {
+        Print("onError() - \(error)")
     }
-
-    override fun onNoBanner() {
-        Log.d(TAG, "onNoBanner: called")
-    }
-
-    override fun onInterstitialShown() {
-        Log.d(TAG, "onInterstitialShown: called")
-    }
-
-    override fun onInterstitialClosed() {
-        Log.d(TAG, "onInterstitialClosed: called")
-    }
-
-    override fun onNoInterstitial() {
-        Log.d(TAG, "onNoInterstitial: called")
-    }
-}
-
-
-###### Java
-
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.Button;
-
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.appylar.android.sdk.bannerview.BannerView;
-import com.appylar.android.sdk.bannerview.BannerViewListener;
-import com.appylar.android.sdk.interstitial.Interstitial;
-import com.appylar.android.sdk.interstitial.InterstitialListener;
-
-public class JavaActivity extends AppCompatActivity implements BannerViewListener, InterstitialListener {
-    private static final String TAG = "JavaActivity";
-    private BannerView bannerView;
-    private Button btnShowBanner;
-    private Button btnHideBanner;
-    private Button btnShowInterstitial;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        bannerView = findViewById(R.id.bannerView);
-
-        btnShowBanner = findViewById(R.id.btnShowBanner);
-        btnHideBanner = findViewById(R.id.btnHideBanner);
-        btnShowInterstitial = findViewById(R.id.btnShowInterstitial);
-
-        bannerView.setEventListener(this); //Attach Banner Event Listeners
-        btnShowBanner.setOnClickListener(v -> {
-            if (bannerView.canShowAd()) {
-                bannerView.showAd("");
-            }
-        });
-        btnHideBanner.setOnClickListener(v -> {
-            bannerView.hideBanner();
-        });
-
-        Interstitial.setEventListener(this); //Attach Interstitial Event Listeners
-        btnShowInterstitial.setOnClickListener(v -> {
-            if (Interstitial.canShowAd()) {
-                Interstitial.showAd(this, "");
-            }
-        });
-    }
-
-    @Override
-    public void onBannerShown() {
-        Log.d(TAG, "onBannerShown: called");
-    }
-
-    @Override
-    public void onNoBanner() {
-        Log.d(TAG, "onNoBanner: called");
+}  
+//Attach callbacks for banner.
+extension ViewController: BannerViewDelegate{
+    func onNoBanner() {
+        Print("onNoBanner()")
     }
     
-    @Override
-    public void onInterstitialShown() {
-        Log.d(TAG, "onInterstitialShown: called");
+    func onBannerShown() {
+        Print("onBannerShown()")
     }
-
-    @Override
-    public void onNoInterstitial() {
-        Log.d(TAG, "onNoInterstitial: called");
+    
+    
+}
+//Attach callbacks for interstitial.
+extension ViewController: InterstitialDelegate{
+    func onNoInterstitial() {
+        Print("onNoInterstitial()")
     }
-
-    @Override
-    public void onInterstitialClosed() {
-        Log.d(TAG, "onInterstitialClosed: called");
+    
+    func onInterstitialShown() {
+        Print("onInterstitialShown()")
+    }
+    
+    func onInterstitialClosed() {
+        Print("onInterstitialClosed()")
     }
 }
-	
+```
+<p align="right"><a href="#readme-top">Back To Top</a></p>
