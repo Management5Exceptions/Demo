@@ -185,144 +185,118 @@ For better performance and check the availability of ads you can `canShowAd()` f
 
 #### Add Interstitial Ads
 
-1. Make your `ViewController` of type `InterstitialViewController`.  
+1. Make your a new swift file in which create a class of type `InterstitialViewController`.  
 ```swift
-   class ViewController: InterstitialViewController
+   class interstitialViewController:InterstitialViewController
 ```
 
 2. Implement callbacks for Interstitial.
+
 ```swift
 //Attach callbacks for interstitial.
-func onNoInterstitial(){
-    	//Callback for when there is no Ad to show.  
-   }
-func onInterstitialShown() {
-       //Callback for Ad shown.  
-   }
-func onInterstitialClosed() {
-    	//Callback for close event of interstitial
-   }
-```	
-
-3. Check Ad availablity and show the Ad.<br>
- For better performance and check the availability of ads you can `canShowAd()` function.
-```swift
-if  InterstitialViewController.canShowAd(){
-                 // showAd function with the value of placement
-  	         self.bannerView.showAd(placement: txtfieldEnterPlacement.text ?? "" )
-		 // showAd function without placement parameter
-		 self.bannerView.showAd()
-}
-```
-   The parameter placement is optional, and it is up to the developer to decide whether to pass it or not.
-
-4. For lock the orientation of interstitial in your `AppDelegate` and override a function in it.
-
-```swift
-      func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-           return AppylarManager.supportedOrientation
-      }
-```
-<p align="right"><a href="#readme-top">Back To Top</a></p>
-
-## Sample Codes
-
-1. For initialization
-	
-```swift
-import SwiftUI
-import Appylar
-		
-class ViewController: InterstitialViewController{
-    	Override func viewDidLoad() {
-		super.viewDidLoad()  
-		//Attach callback listeners for SDK before initialization
-                AppylarManager.setEventListener(delegate: self,bannerDelegate: self,interstitialDelegate: self) 
-            	//Here ‘setEventListener’ is a method for AppylarManager
-		//Initialization
-           	AppylarManager.Init(                        
-          		app_Key: "<YOUR_APP_KEY>"?? “”, //APP KEY provided by console for Development use    ["OwDmESooYtY2kNPotIuhiQ"]
- 			Adtypes: [AdType.BANNER, AdType.INTERSTITIAL]	//Types of Ads to integrate
-			orientations: [Orientation.PORTRAIT, Orientation.LANDSCAPE], 	//Supported orientations for Ads
-			testmode: true // ‘True’ for development and ‘False’ for production, 
-			)
-     	}
-}
-
-```
-
-2. For orientation lock of interstitial:
-
-```swift
-  func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-           return AppylarManager.supportedOrientation
-  }
-```
-3.  Implements for both the types:
-
-```swift
-import UIKit
-import Appylar
-
-class ViewController: InterstitialViewController { 
-    	@IBAction func btnShowBannerDidTapped(_ sender: UIButton) {
-            if BannerView.canShowAd(){    
-	         // showAd function with the value of placement
-  	         self.bannerView.showAd(placement: txtfieldEnterPlacement.text ?? "" )
-		 // showAd function without placement parameter
-		 self.bannerView.showAd()
-            }
-    	 }
-    
-    	@IBAction func btnHideBannerDidTapped(_ sender: UIButton) {
-        	self.bannerView.hideBanner()
-        	self.view.layoutIfNeeded()
-    	}
-    
-    	@IBAction func btnShowIntersitialDidTapped(_ sender: UIButton) {
-        	if  InterstitialViewController.canShowAd(){
-                 // showAd function with the value of placement
-  	         self.bannerView.showAd(placement: txtfieldEnterPlacement.text ?? "" )
-		 // showAd function without placement parameter
-		 self.bannerView.showAd()
-       		} 
-   	}
-}
-//Attach callbacks for Initialization.
-extension ViewController : AppylarDelegate {
-    func onInitialized() {
-        Print("onInitialized() ")
-    }
-    
-    func onError(error : String) {
-        Print("onError() - \(error)")
-    }
-}  
-//Attach callbacks for banner.
-extension ViewController: BannerViewDelegate{
-    func onNoBanner() {
-        Print("onNoBanner()")
-    }
-    
-    func onBannerShown() {
-        Print("onBannerShown()")
-    }
-    
-    
-}
-//Attach callbacks for interstitial.
-extension ViewController: InterstitialDelegate{
+extension DemoApp: InterstitialDelegate {
     func onNoInterstitial() {
-        Print("onNoInterstitial()")
+        print("onNoInterstitial()")
     }
     
     func onInterstitialShown() {
-        Print("onInterstitialShown()")
+        print("onInterstitialShown()")
     }
     
     func onInterstitialClosed() {
-        Print("onInterstitialClosed()")
+        print("onInterstitialClosed()")
     }
 }
+```	
+
+3. Check Ad availablity and show the Ad.<br>
+ For better performance and check the availability of ads you can `canShowAd()` function and call the showAd method in viewDidLoad() in a class which is a type of `InterstitialViewController`.
+```swift
+ if InterstitialViewController.canShowAd(){
+         self.showAd()
+  }
+```
+   The parameter placement is optional, and it is up to the developer to decide whether to pass it or not.
+
+4. For lock the orientation of interstitial in your `DemoApp` and override a function in it.
+
+```swift
+class AppDelegate: NSObject, UIApplicationDelegate {
+    static var orientationLock = UIInterfaceOrientationMask.all {
+        didSet {
+            if #available(iOS 16.0, *) {
+                UIApplication.shared.connectedScenes.forEach { scene in
+                    if let windowScene = scene as? UIWindowScene {
+                        windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: orientationLock))
+                    }
+                }
+                UIViewController.attemptRotationToDeviceOrientation()
+            } else {
+                if orientationLock == .landscape {
+                    UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
+                } else {
+                    UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
+                }
+            }
+        }
+    }
+    
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        if Session.isInterstitialShown{
+            return AppDelegate.orientationLock
+        }else{
+            return AppylarManager.supportedOrientation
+        }
+    }
+}
+```
+ 
+To override a function in your DemoApp file, you can refer to the AppDelegate class and override the corresponding function within it.
+
+```swift
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+```
+
+5. To create an InterstitialView as a representable, you need to define a struct that extends UIViewControllerRepresentable.
+
+```swift
+struct MyView: UIViewControllerRepresentable {
+    typealias UIViewControllerType = AddViewController
+    
+    func makeUIViewController(context: Context) -> AddViewController {
+        let vc = AddViewController()
+        return vc
+    }
+    
+    func updateUIViewController(_ uiViewController: AddViewController, context: Context) {
+    }
+}
+```
+6. To integrate the interstitial ad into your SwiftUI ContentView, you can use the following code:
+
+```swift
+       MyView()
+```
+
+7. To lock the orientation of the interstitial ad when using it as a view representable, apply the following code within the .onAppear and .onDisappear modifiers.
+
+```swift
+          interstitialViewRepresentable()
+                    .onAppear{
+                        if currentOrientation.isLandscape{
+                            if currentOrientation == .landscapeLeft {
+                                AppDelegate.orientationLock = .landscapeRight
+                            }else if currentOrientation == .landscapeRight {
+                                AppDelegate.orientationLock = .landscapeLeft
+                            }
+                        }else{
+                            AppDelegate.orientationLock = .portrait
+                        }     
+                    }
+                    .onDisappear{
+                        NotificationCenter.default.post(name: UIDevice.orientationDidChangeNotification, object: nil)
+                        AppDelegate.orientationLock = .all
+                        currentOrientation = UIDevice.current.orientation
+                    }
 ```
 <p align="right"><a href="#readme-top">Back To Top</a></p>
